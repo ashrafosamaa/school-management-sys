@@ -3,7 +3,7 @@ import { AdminService } from './admin.service';
 import { Request, Response } from 'express';
 import { ZodValidationPipe } from 'src/pipes/validation.pipe';
 import { createAdminSchema, IDSchema, loginAdminSchema, updateMyAccountSchema } from './admin.zod-schema';
-import { AuthGuard } from 'src/guards/admin.auth';
+import { AuthAdminGuard } from 'src/guards';
 
 
 @Controller('admin')
@@ -14,7 +14,7 @@ export class AdminController {
 
     @Post()
     @UsePipes(new ZodValidationPipe(createAdminSchema))
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthAdminGuard)
     async createAdmin(
         @Body() body: any,
         @Res() res: Response
@@ -68,7 +68,7 @@ export class AdminController {
 
     @Put()
     @UsePipes(new ZodValidationPipe(updateMyAccountSchema))
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthAdminGuard)
     async updateMyAccount(
         @Req() req: Request,
         @Res() res: Response,
@@ -83,7 +83,7 @@ export class AdminController {
     }
 
     @Delete()
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthAdminGuard)
     async deleteMyAccount(
         @Req() req: Request,
         @Res() res: Response

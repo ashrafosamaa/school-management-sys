@@ -2,14 +2,14 @@ import { Injectable, CanActivate, ExecutionContext, BadRequestException } from '
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Admin } from 'src/DB/models/admin.model';
+import { Teacher } from 'src/DB/models/teacher.model';
 
 
 @Injectable()
-export class AuthAdminGuard implements CanActivate {
+export class AuthTeacherGuard implements CanActivate {
     constructor(
         private jwtService : JwtService,
-        @InjectModel(Admin.name) private adminModel : Model<Admin>,
+        @InjectModel(Teacher.name) private teacherModel : Model<Teacher>,
     ) { }
     async canActivate(
         context : ExecutionContext,
@@ -23,11 +23,11 @@ export class AuthAdminGuard implements CanActivate {
         if (!decodedData.id) {
             throw new BadRequestException('Invalid token payload')
         }
-        const admin = await this.adminModel.findById(decodedData.id)
-        if (!admin) {
+        const teacher = await this.teacherModel.findById(decodedData.id)
+        if (!teacher) {
             throw new BadRequestException('Unauthorized, Please signup first')
         }
-        req.authAdmin = admin
+        req.authTeacher = teacher
         return req
     }
 }
