@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-import { AdminModule, TeacherModule } from './modules';
+import { AdminModule, TeacherModule, StudentModule } from './modules';
 
 
 @Module({
@@ -11,7 +11,8 @@ import { AdminModule, TeacherModule } from './modules';
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.DATABASE_URL),
     AdminModule,
-    TeacherModule
+    TeacherModule,
+    StudentModule
   ],
   controllers: [AppController],
   providers: [AppService],
