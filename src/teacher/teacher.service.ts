@@ -15,6 +15,8 @@ export class TeacherService {
 
     async createTeacher(body: any) {
         const { name, email, phone, specialization, salary, nationalId } = body
+        const teachernId = await this.teacherModel.findOne({ nationalId })
+        if(teachernId) throw new BadRequestException('Teacher national ID already exists')
         const teacher = await this.teacherModel.findOne({ email })
         if(teacher) throw new BadRequestException('Teacher email already exists')
         const hashPassword = bcrypt.hashSync(nationalId, parseInt(process.env.SALT_ROUNDS_1))
