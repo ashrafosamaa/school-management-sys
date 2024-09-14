@@ -51,6 +51,17 @@ export class StudentZodSchema {
             .regex(/^[a-fA-F0-9]+$/, { message: 'ID must be a valid hexadecimal string' })
     }).required()
 
+    static getAllStudentsSchema = z.object({
+        page: z.string().regex(/^[0-9]+$/, { message: 'Page must be only digits' }).optional(),
+        size: z.string().regex(/^[0-9]+$/, { message: 'Size must be only digits' }).optional(),
+        sort: z.string().regex(/^(\w+)\s(asc|desc)$/, 
+            { message: 'Sort must be 2 words first word is field and second asc or desc' }).optional()
+    }).optional()
+
+    static searchStudentsSchema = z.object({
+        nationalId: z.string().regex(/^[0-9]+$/, { message: 'Must be only digits' }).optional()
+    }).required()
+
     static updateStudentSchema = z.object({
         fullName: z.string().min(3, { message: 'Name must be at least 3 characters long' })
             .max(64, { message: 'Name must be at most 64 characters long' }).optional(),

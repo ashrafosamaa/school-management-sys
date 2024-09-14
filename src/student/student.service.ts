@@ -5,6 +5,7 @@ import { Student } from 'src/DB/models/student.model';
 import * as bcrypt from 'bcrypt'
 import { cloudinaryConn } from 'src/utils/cloudinary-connection';
 import { JwtService } from '@nestjs/jwt';
+import { APIFeatures } from 'src/utils/api-feature';
 
 
 @Injectable()
@@ -67,9 +68,23 @@ export class StudentService {
         return student
     }
 
-    async getAllStudents() {
-        const students = await this.studentModel.find({ isAccountActivated: true })
-            .select(' fullName email parentPhone gender totalFees grade classNum fessStatus ')
+    async getAllStudents(query: any) {
+        const { page, size, sort } = query
+        const features = new APIFeatures(query, this.studentModel.find({ isAccountActivated: true })
+            .select(' fullName email parentPhone gender totalFees grade classNum fessStatus '))
+            .pagination({ page, size })
+            .sort(sort)
+        const students = await features.mongooseQuery
+        if(!students.length) throw new BadRequestException('No students found')
+        return students
+    }
+
+    async searchStudents(query: any) {
+        const { ...search } = query
+        const features = new APIFeatures(query, this.studentModel.find({ isAccountActivated: true })
+            .select(' fullName email parentPhone gender totalFees grade classNum fessStatus nationalId '))
+            .searchStudents(search)
+        const students = await features.mongooseQuery
         if(!students.length) throw new BadRequestException('No students found')
         return students
     }

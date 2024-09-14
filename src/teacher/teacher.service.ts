@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Teacher } from 'src/DB/models/teacher.model';
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt';
+import { APIFeatures } from 'src/utils/api-feature';
 
 
 @Injectable()
@@ -55,9 +56,23 @@ export class TeacherService {
         return teacher
     }
 
-    async getAllTeachers() {
-        const teachers = await this.teacherModel.find({isAccountActivated: true})
-            .select(' name specialization salary ')
+    async getAllTeachers(query: any) {
+        const { page, size, sort } = query
+        const features = new APIFeatures(query, this.teacherModel.find({ isAccountActivated: true })
+            .select(' name email phone specialization salary '))
+            .pagination({ page, size })
+            .sort(sort)
+        const teachers = await features.mongooseQuery
+        if(!teachers.length) throw new BadRequestException('No teachers found')
+        return teachers
+    }
+
+    async searchTeachers(query: any) {
+        const { ...search } = query
+        const features = new APIFeatures(query, this.teacherModel.find({ isAccountActivated: true })
+            .select(' name email phone specialization salary '))
+            .searchTeachers(search)
+        const teachers = await features.mongooseQuery
         if(!teachers.length) throw new BadRequestException('No teachers found')
         return teachers
     }

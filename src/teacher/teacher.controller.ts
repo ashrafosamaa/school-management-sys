@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Req, Res, UseGuards, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res, UseGuards, UsePipes } from '@nestjs/common';
 import { TeacherService } from './teacher.service';
 import { Request, Response } from 'express';
 import { AuthAdminGuard, AuthTeacherGuard, } from 'src/guards';
@@ -68,10 +68,26 @@ export class TeacherController {
     }
 
     @Get()
+    @UsePipes(new ZodValidationPipe(TeacherZodSchema.getAllTeachersSchema))
     async getAllTeachers(
-        @Res() res: Response
+        @Res() res: Response,
+        @Query() query: any
     ) {
-        const teachers = await this.teacherService.getAllTeachers()
+        const teachers = await this.teacherService.getAllTeachers(query)
+        res.status(200).json({
+            message: 'Teachers found successfully',
+            statusCode: 200,
+            teachers
+        })
+    }
+
+    @Get('search')
+    @UsePipes(new ZodValidationPipe(TeacherZodSchema.searchTeachersSchema))
+    async searchTeachers(
+        @Res() res: Response,
+        @Query() query: any
+    ) {
+        const teachers = await this.teacherService.searchTeachers(query)
         res.status(200).json({
             message: 'Teachers found successfully',
             statusCode: 200,

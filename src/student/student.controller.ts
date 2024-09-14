@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req,
+        Res, UploadedFile, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerImages } from 'src/guards/multer.guard';
@@ -66,17 +67,35 @@ export class StudentController {
     ) {
         const student = await this.studentService.getStudent(params)
         res.status(200).json({
+            message: 'Student fetched successfully',
             statusCode: 200,
             student
         })
     }
 
     @Get()
+    @UsePipes(new ZodValidationPipe(StudentZodSchema.getAllStudentsSchema))
     async getAllStudents(
-        @Res() res: Response
+        @Res() res: Response,
+        @Query() query: any
     ) {
-        const students = await this.studentService.getAllStudents()
+        const students = await this.studentService.getAllStudents(query)
         res.status(200).json({
+            message: 'Students fetched successfully',
+            statusCode: 200,
+            students
+        })
+    }
+
+    @Get('search')
+    @UsePipes(new ZodValidationPipe(StudentZodSchema.searchStudentsSchema))
+    async searchStudents(
+        @Res() res: Response,
+        @Query() query: any
+    ) {
+        const students = await this.studentService.searchStudents(query)
+        res.status(200).json({
+            message: 'Students fetched successfully',
             statusCode: 200,
             students
         })
@@ -91,6 +110,7 @@ export class StudentController {
     ) {
         await this.studentService.updateStudentAcc(body, params)
         res.status(200).json({
+            message: 'Student account updated successfully',
             statusCode: 200,
         })
     }
@@ -104,6 +124,7 @@ export class StudentController {
     ) {
         await this.studentService.deleteStudentAcc(params)
         res.status(200).json({
+            message: 'Student account deleted successfully',
             statusCode: 200
         })
     }
@@ -117,6 +138,7 @@ export class StudentController {
     ) {
         await this.studentService.resetStudentPassword(params)
         res.status(200).json({
+            message: 'Student password reset successfully',
             statusCode: 200
         })
     }
@@ -129,6 +151,7 @@ export class StudentController {
     ) {
         const student = await this.studentService.getMyAcc(req)
         res.status(200).json({
+            message: 'Your account fetched successfully',
             statusCode: 200,
             student
         })
@@ -144,6 +167,7 @@ export class StudentController {
     ) {
         await this.studentService.updateMyAcc(body, req)
         res.status(200).json({
+            message: 'Your account updated successfully',
             statusCode: 200
         })
     }
@@ -158,6 +182,7 @@ export class StudentController {
     ) {
         const token = await this.studentService.updateMyPassword(body, req)
         res.status(200).json({
+            message: 'Your password updated successfully',
             statusCode: 200,
             token
         })
@@ -171,6 +196,7 @@ export class StudentController {
     ) {
         await this.studentService.deleteMyAcc(req)
         res.status(200).json({
+            message: 'Your account deleted successfully',
             statusCode: 200
         })
     }
