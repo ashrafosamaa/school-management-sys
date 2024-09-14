@@ -4,6 +4,7 @@ import { StudentService } from '../student/student.service';
 import { models } from 'src/DB/model-generation';
 import { JwtService } from '@nestjs/jwt';
 
+
 @Module({
   imports: [models],
   controllers: [StudentController],

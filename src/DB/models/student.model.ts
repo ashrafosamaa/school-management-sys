@@ -12,7 +12,7 @@ export class Student {
     @Prop({ type : String , required : true })
     nationalId : string
 
-    @Prop({ type: String, required: true, })
+    @Prop({ type: String, })
     phone : string
 
     @Prop({ type: String, required: true, })
@@ -33,31 +33,34 @@ export class Student {
     @Prop({ type : String , required : true , })
     totalFees : string
 
-    @Prop({ type : String , required : true , })
+    @Prop({ type : String , default : "0" })
     paidFees : string
 
-    @Prop({ type : String , required : true , enum: ["paid", "unpaid"] })
+    @Prop({ type : String , enum: ["paid", "unpaid"], default : "unpaid" })
     fessStatus : string
 
     @Prop({ type : String , required : true ,
     enum : ["kg1", "kg2", "first", "second", "third", "fouth", "fifth", "sixth", "seventh", "eighth", "ninth"] })
     grade : string
 
-    @Prop({ type : String , required : true })
-    class : string
+    @Prop({ type : String , required : true, enum : ["A", "B", "C"] })
+    classNum : string
 
-    @Prop({ type : String , required : true , default : "student" , enum : ["student"] })
+    @Prop({ type : String , default : "student" , enum : ["student"] })
     role : string
 
     @Prop({ type: {url: { type: String },
             publicId: { type: String }},
         })
     profileImg: {
-        secure_url: string;
+        url: string;
         publicId: string;
     };
 
-    @Prop({ type : Boolean , required : true , default : false })
+    @Prop({ type : String })
+    folderId : string
+
+    @Prop({ type : Boolean , default : false })
     isAccountActivated : boolean
 }
 

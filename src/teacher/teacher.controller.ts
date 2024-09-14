@@ -107,7 +107,7 @@ export class TeacherController {
         })
     }
 
-    @Patch('byId/:teacherId')
+    @Patch('resetPassword/:teacherId')
     @UsePipes(new ZodValidationPipe(TeacherZodSchema.IDSchema))
     @UseGuards(AuthAdminGuard)
     async resetTeacherPassword(
@@ -164,4 +164,5 @@ export class TeacherController {
             statusCode: 200,
         })
     }
+
 }
