@@ -181,4 +181,19 @@ export class TeacherController {
         })
     }
 
+    @Put('scores/:studentId')
+    @UseGuards(AuthTeacherGuard)
+    async updateStudentResults(
+        @Param(new ZodValidationPipe(TeacherZodSchema.studentIdSchema)) params: any,
+        @Body(new ZodValidationPipe(TeacherZodSchema.updateStudentResultsSchema)) body: any,
+        @Req() req: Request,
+        @Res() res: Response
+    ) {
+        const student = await this.teacherService.updateStudentResults(body, params, req)
+        res.status(200).json({
+            message: 'Student results updated successfully',
+            statusCode: 200,
+            student
+        })
+    }
 }

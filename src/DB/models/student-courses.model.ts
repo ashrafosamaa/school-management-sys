@@ -12,12 +12,14 @@ export class StudentCourse {
             title: { type: String, },
             year: { type: String, },
             term: { type: String, enum: ['first', 'second', 'summer'] },
-            oral: { type: String, default: "0", max: "10" },
-            attendance: { type: String, default: "0", max:"10" },
-            practical: { type: String, default: "0", max:"15" },
-            midterm: { type: String, default: "0", max: "15" },
-            final: { type: String, default:"0", max: "50" },
+            oral: { type: Number, default:0 , max: 10 },
+            attendance: { type: Number, default:0 , max:10 },
+            practical: { type: Number, default:0 , max:15 },
+            midterm: { type: Number, default:0 , max: 15 },
+            final: { type: Number, default:0 , max: 50 },
+            total: { type: Number, default:0 , max: 100 },
             courseId: { type: Types.ObjectId, ref: 'Course' },
+            updatedBy :{ type: Types.ObjectId, ref: 'Teacher' }, 
         }], required: true
     })
     courses: Array<{
@@ -29,7 +31,8 @@ export class StudentCourse {
         practical: string;
         midterm: string;
         final: string;
-        courseId: Types.ObjectId
+        courseId: Types.ObjectId, 
+        updatedBy : Types.ObjectId
     }>;
 
 }

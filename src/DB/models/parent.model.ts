@@ -41,7 +41,7 @@ export class Parent {
     @Prop({ type: String, })
     accountActivateCode : string
 
-    @Prop({ type: String, default: null })
+    @Prop({ type: String })
     passwordResetCode: string;
 
     @Prop({ type: Boolean, default: false })

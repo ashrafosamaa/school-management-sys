@@ -5,12 +5,14 @@ import { Teacher } from 'src/DB/models/teacher.model';
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt';
 import { APIFeatures } from 'src/utils/api-feature';
+import { StudentCourse } from 'src/DB/models/student-courses.model';
 
 
 @Injectable()
 export class TeacherService {
     constructor(
         @InjectModel(Teacher.name) private teacherModel : Model<Teacher>,
+        @InjectModel(StudentCourse.name) private studentCourseModel : Model<StudentCourse>,
         private jwtService: JwtService
     ) {}
 
@@ -137,6 +139,33 @@ export class TeacherService {
         const teacher = await this.teacherModel.findById(req.authTeacher.id)
         await teacher.deleteOne()
         return true
+    }
+
+    async updateStudentResults(body: any, params: any, req:any) {
+        const student = await this.studentCourseModel.findOne({studentId: params.studentId})
+            .select('studentId courses')
+            .populate({
+                path: 'studentId',
+                select: 'fullName grade classNum',
+            })
+        if(!student) throw new ConflictException('Student already has no courses added, or not found')
+        // check if address already exists
+        const courseExists = student.courses.some(c => c.courseId.toString() === body.courseId);
+        if (!courseExists) {
+            throw new ConflictException('Course not found');
+        }
+        const studentCourses = await this.studentCourseModel.findOneAndUpdate(
+            { studentId: params.studentId, "courses.courseId": body.courseId },
+            { $set: 
+            { "courses.$.oral": body.oral, "courses.$.attendance": body.attendance, "courses.$.practical": body.practical,
+                "courses.$.midterm": body.midterm, "courses.$.final": body.final, "courses.$.updatedBy": req.authTeacher.id,
+                "courses.$.total": (body.oral ?? 0) + (body.practical ?? 0) +
+                (body.midterm ?? 0) + (body.final ?? 0) + (body.attendance ?? 0) }},
+            { new: true})
+            .select('studentId courses')
+            .populate({ path: 'studentId', select: 'fullName grade classNum'})
+            .populate({ path: 'courses.updatedBy', select: 'name'});
+        return studentCourses
     }
 
 }

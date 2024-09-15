@@ -208,10 +208,8 @@ export class StudentService {
     async getStudentCourses(params: any) {
         const student = await this.studentCourseModel.findOne({studentId: params.studentId})
             .select('studentId courses')
-            .populate({
-                path: 'studentId',
-                select: 'fullName grade classNum',
-            });
+            .populate({ path: 'studentId', select: 'fullName grade classNum'})
+            .populate({ path: 'courses.updatedBy', select: 'name'});
         if(!student) throw new ConflictException('Student has no courses added yet')
         return student
     }
@@ -223,7 +221,7 @@ export class StudentService {
                 path: 'studentId',
                 select: 'fullName grade classNum',
             });
-        if(!student) throw new ConflictException('Student has no courses added yet')
+        if(!student) throw new ConflictException('Student already has no courses added')
         // check if address already exists
         const courseExists = student.courses.some(c => c.courseId.toString() === body.courseId);
         if (!courseExists) {
@@ -235,6 +233,7 @@ export class StudentService {
             { new: true})
             .select('studentId courses')
             .populate({ path: 'studentId', select: 'fullName grade classNum'})
+            .populate({ path: 'courses.updatedBy', select: 'name'});
         return studentCourses
     }
 
