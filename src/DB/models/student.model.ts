@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Types } from "mongoose";
 
 
 @Schema({timestamps : true})
@@ -40,8 +41,19 @@ export class Student {
     fessStatus : string
 
     @Prop({ type : String , required : true ,
-    enum : ["kg1", "kg2", "first", "second", "third", "fouth", "fifth", "sixth", "seventh", "eighth", "ninth"] })
+    enum : ["k1", "k2", "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9"] })
     grade : string
+
+    @Prop({
+        type: [{
+            title: { type: String, },
+            courseId: { type: Types.ObjectId, ref: 'Student'},
+        }],
+    })
+    courses: Array<{
+        title: string;
+        courseId: Types.ObjectId;
+    }>;
 
     @Prop({ type : String , required : true, enum : ["A", "B", "C"] })
     classNum : string

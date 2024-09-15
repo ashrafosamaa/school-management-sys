@@ -38,7 +38,14 @@ export class Teacher {
     @Prop({
         type : String ,
         required : true ,
-        enum : ["english", "arabic", "maths", "science", "sports", "music"]
+        enum : ["male" , "female"]
+    })
+    gender : string
+
+    @Prop({
+        type : String ,
+        required : true ,
+        enum : ["primary" , "junior" , "senior"]
     })
     specialization : string
 

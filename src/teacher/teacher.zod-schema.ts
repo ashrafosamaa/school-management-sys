@@ -6,7 +6,8 @@ export class TeacherZodSchema {
             .max(15, { message: 'Name must be at most 16 characters long' }),
         email: z.string().email({ message: 'Invalid email address' }),
         phone: z.string().length(11, { message: 'Phone must be exactly 11 digits' }),
-        specialization: z.enum(['english', 'arabic', 'maths', 'science', 'sports', 'music']),
+        gender: z.enum(['male', 'female'], { message: 'Invalid gender' }),
+        specialization: z.enum(['primary', 'junior', 'senior'], { message: 'Invalid specialization' }),
         salary: z.string().regex(/^[0-9]+$/, { message: 'Salary must be only digits' }),
         nationalId: z.string().length(14, { message: 'National ID must be exactly 14 digits' })
             .regex(/^[0-9]+$/, { message: 'National ID must only contain digits' }),
@@ -60,7 +61,8 @@ export class TeacherZodSchema {
             .max(15, { message: 'Name must be at most 16 characters long' }).optional(),
         email: z.string().email({ message: 'Invalid email address' }).optional(),
         phone: z.string().length(11, { message: 'Phone must be exactly 11 digits' }).optional(),
-        specialization: z.enum(['english', 'arabic', 'maths', 'science', 'sports', 'music']).optional(),
+        gender: z.enum(['male', 'female'], { message: 'Invalid gender' }).optional(),
+        specialization: z.enum(['primary', 'junior', 'senior'], { message: 'Invalid specialization' }).optional(),
         salary: z.string().regex(/^[0-9]+$/, { message: 'Salary must be only digits' }).optional(),
         nationalId: z.string().length(14, { message: 'National ID must be exactly 14 digits' })
             .regex(/^[0-9]+$/, { message: 'National ID must only contain digits' }).optional(),
@@ -78,6 +80,7 @@ export class TeacherZodSchema {
         phone: z.string().length(11, { message: 'Phone must be exactly 11 digits' }).optional(),
         nationalId: z.string().length(14, { message: 'National ID must be exactly 14 digits' })
             .regex(/^[0-9]+$/, { message: 'National ID must only contain digits' }).optional(),
+        gender: z.enum(['male', 'female'], { message: 'Invalid gender' }).optional(),
     })
 
     static updateMyPasswordSchema = z.object({

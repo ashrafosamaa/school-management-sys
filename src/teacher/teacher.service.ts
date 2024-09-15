@@ -15,14 +15,14 @@ export class TeacherService {
     ) {}
 
     async createTeacher(body: any) {
-        const { name, email, phone, specialization, salary, nationalId } = body
+        const { name, email, phone, specialization, salary, nationalId, gender } = body
         const teachernId = await this.teacherModel.findOne({ nationalId })
         if(teachernId) throw new BadRequestException('Teacher national ID already exists')
         const teacher = await this.teacherModel.findOne({ email })
         if(teacher) throw new BadRequestException('Teacher email already exists')
         const hashPassword = bcrypt.hashSync(nationalId, +process.env.SALT_ROUNDS_1)
         await this.teacherModel.create({ name, email, phone, password: hashPassword,
-            nationalId, specialization, salary, role: 'teacher' })
+            nationalId, specialization, salary, gender })
         return true
     }
 
@@ -51,7 +51,7 @@ export class TeacherService {
 
     async getTeacher(params: any) {
         const teacher = await this.teacherModel.findOne({_id: params.teacherId, isAccountActivated: true})
-            .select(' name email phone specialization salary ')
+            .select(' name email phone specialization salary gender ')
         if(!teacher) throw new ConflictException('Teacher not found')
         return teacher
     }
@@ -59,7 +59,7 @@ export class TeacherService {
     async getAllTeachers(query: any) {
         const { page, size, sort } = query
         const features = new APIFeatures(query, this.teacherModel.find({ isAccountActivated: true })
-            .select(' name email phone specialization salary '))
+            .select(' name email phone salary '))
             .pagination({ page, size })
             .sort(sort)
         const teachers = await features.mongooseQuery
@@ -70,7 +70,7 @@ export class TeacherService {
     async searchTeachers(query: any) {
         const { ...search } = query
         const features = new APIFeatures(query, this.teacherModel.find({ isAccountActivated: true })
-            .select(' name email phone specialization salary '))
+            .select(' name email phone salary '))
             .searchTeachers(search)
         const teachers = await features.mongooseQuery
         if(!teachers.length) throw new ConflictException('No teachers found')
@@ -80,13 +80,14 @@ export class TeacherService {
     async updateTeacherAcc(body: any, params: any) {
         const teacher = await this.teacherModel.findById(params.teacherId)
         if(!teacher) throw new ConflictException('Teacher not found')
-        const { name, email, phone, specialization, salary, nationalId } = body
+        const { name, email, phone, specialization, salary, nationalId, gender } = body
         if(name) teacher.name = name
         if(email) teacher.email = email
         if(phone) teacher.phone = phone
         if(specialization) teacher.specialization = specialization
         if(nationalId) teacher.nationalId = nationalId
         if(salary) teacher.salary = salary
+        if(gender) teacher.gender = gender
         await teacher.save()
         return true
     }
@@ -110,11 +111,12 @@ export class TeacherService {
 
     async updateMyAcc(body: any, req: any) {
         const teacher = await this.teacherModel.findById(req.authTeacher.id)
-        const { name, email, phone, nationalId } = body
+        const { name, email, phone, nationalId, gender } = body
         if(name) teacher.name = name
         if(email) teacher.email = email
         if(phone) teacher.phone = phone
         if(nationalId) teacher.nationalId = nationalId
+        if(gender) teacher.gender = gender
         await teacher.save()
         return true
     }

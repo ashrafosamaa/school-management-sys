@@ -15,7 +15,7 @@ export class StudentZodSchema {
             .length(10, { message: 'Birth date must be exactly 10 digits' }), //09-04-2011
         gender: z.enum(['male', 'female']),
         totalFees: z.string().regex(/^[0-9]+$/, { message: 'Total fees must be only digits' }),
-        grade: z.enum(["kg1", "kg2", "first", "second", "third", "fouth", "fifth", "sixth", "seventh", "eighth", "ninth"]),
+        grade: z.enum(["k1", "k2", "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9"]),
         classNum: z.enum(["A", "B", "C"]),
     })
 
@@ -76,7 +76,7 @@ export class StudentZodSchema {
             .length(10, { message: 'Birth date must be exactly 10 digits' }).optional(), //09-04-2011
         gender: z.enum(['male', 'female']).optional(),
         totalFees: z.string().regex(/^[0-9]+$/, { message: 'Total fees must be only digits' }).optional(),
-        grade: z.enum(["kg1", "kg2", "first", "second", "third", "fouth", "fifth", "sixth", "seventh", "eighth", "ninth"]).optional(),
+        grade: z.enum(["k1", "k2", "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9"]).optional(),
         classNum: z.enum(["A", "B", "C"]).optional(),
         paidFees: z.string().regex(/^[0-9]+$/, { message: 'Paid fees must be only digits' }).optional(),
         fessStatus: z.enum(["paid", "unpaid"]).optional(),
