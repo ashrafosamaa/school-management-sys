@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Student } from 'src/DB/models/student.model';
@@ -21,7 +21,7 @@ export class StudentService {
         if(studentnId) throw new BadRequestException('Student national ID already exists')
         const student = await this.studentModel.findOne({ email })
         if(student) throw new BadRequestException('Student email already exists')
-        const hashPassword = bcrypt.hashSync(nationalId, parseInt(process.env.SALT_ROUNDS_1))
+        const hashPassword = bcrypt.hashSync(nationalId, +process.env.SALT_ROUNDS_1)
         // upload photo
         if(!file) throw new BadRequestException('File picture not found')
         const folderId = Math.floor(1000 + Math.random() * 9000).toString();
@@ -39,9 +39,9 @@ export class StudentService {
     async firstUse(body: any) {
         const {email, password, newPassword} = body
         const student = await this.studentModel.findOne({ email })
-        if(!student) throw new BadRequestException('Email not found')
+        if(!student) throw new ConflictException('Email not found')
         if(!bcrypt.compareSync(password, student.password)) throw new BadRequestException('Invalid password')
-        const hashPassword = bcrypt.hashSync(newPassword, parseInt(process.env.SALT_ROUNDS_1))
+        const hashPassword = bcrypt.hashSync(newPassword, +process.env.SALT_ROUNDS_1)
         student.password = hashPassword
         student.isAccountActivated = true
         await student.save()
@@ -51,7 +51,7 @@ export class StudentService {
     async login(body: any) {
         const { email, password } = body
         const student = await this.studentModel.findOne({ email })
-        if(!student) throw new BadRequestException('Email not found')
+        if(!student) throw new ConflictException('Email not found')
         if(!student.isAccountActivated) throw new BadRequestException('Please activate your account first')
         if(!bcrypt.compareSync(password, student.password)) throw new BadRequestException('Invalid password')
         const studentToken = this.jwtService.sign({ id: student._id, name: student.fullName, eamil: student.email },
@@ -62,9 +62,7 @@ export class StudentService {
     async getStudent(params: any) {
         const student = await this.studentModel.findOne({ _id: params.studentId, isAccountActivated: true })
             .select(' fullName email phone address parentPhone birthDate gender totalFees grade classNum paidFees fessStatus profileImg.url ')
-        console.log(params.studentId);
-        
-        if(!student) throw new BadRequestException('Student not found')
+        if(!student) throw new ConflictException('Student not found')
         return student
     }
 
@@ -75,7 +73,7 @@ export class StudentService {
             .pagination({ page, size })
             .sort(sort)
         const students = await features.mongooseQuery
-        if(!students.length) throw new BadRequestException('No students found')
+        if(!students.length) throw new ConflictException('No students found')
         return students
     }
 
@@ -85,13 +83,13 @@ export class StudentService {
             .select(' fullName email parentPhone gender totalFees grade classNum fessStatus nationalId '))
             .searchStudents(search)
         const students = await features.mongooseQuery
-        if(!students.length) throw new BadRequestException('No students found')
+        if(!students.length) throw new ConflictException('No students found')
         return students
     }
 
     async updateStudentAcc(body: any, params: any) {
         const student = await this.studentModel.findById(params.studentId)
-        if(!student) throw new BadRequestException('student not found')
+        if(!student) throw new ConflictException('Student not found')
         if(body.fullName) student.fullName = body.fullName
         if(body.nationalId) student.nationalId = body.nationalId
         if(body.email) student.email = body.email
@@ -112,7 +110,7 @@ export class StudentService {
     async updateStudentImg(file:any, params: any, body: any) {
         if(!file) throw new BadRequestException('File not found')
         const student = await this.studentModel.findById(params.studentId)
-        if(!student) throw new BadRequestException('Student not found')
+        if(!student) throw new ConflictException('Student not found')
         // upload photo
         if(student.profileImg.publicId != body.oldPublicId) throw new BadRequestException('Profile image not found')
         const newPublicId = body.oldPublicId.split(`${student.folderId}/`)[1]
@@ -128,15 +126,15 @@ export class StudentService {
 
     async deleteStudentAcc(params: any) {
         const student = await this.studentModel.findById(params.studentId)
-        if(!student) throw new BadRequestException('Student account not found')
+        if(!student) throw new ConflictException('Student account not found')
         await student.deleteOne()
         return true
     }
 
     async resetStudentPassword(params: any) {
         const student = await this.studentModel.findById(params.studentId)
-        if(!student) throw new BadRequestException('Student account not found')
-        const hashPassword = bcrypt.hashSync(student.nationalId, parseInt(process.env.SALT_ROUNDS_1))
+        if(!student) throw new ConflictException('Student account not found')
+        const hashPassword = bcrypt.hashSync(student.nationalId, +process.env.SALT_ROUNDS_1)
         student.password = hashPassword
         student.isAccountActivated = false
         await student.save()
@@ -151,7 +149,6 @@ export class StudentService {
 
     async updateMyAcc(body: any, req: any) {
         const student = await this.studentModel.findById(req.authStudent.id)
-        if(!student) throw new BadRequestException('student account not found')
         const { fullName, email, phone, nationalId, address } = body
         if(fullName) student.fullName = fullName
         if(nationalId) student.nationalId = nationalId
@@ -164,10 +161,9 @@ export class StudentService {
 
     async updateMyPassword(body: any, req: any) {
         const student = await this.studentModel.findById(req.authStudent.id)
-        if(!student) throw new BadRequestException('Student account not found')
         const { oldPassword, newPassword } = body
         if(!bcrypt.compareSync(oldPassword, student.password)) throw new BadRequestException('Invalid old password')
-        const hashPassword = bcrypt.hashSync(newPassword, parseInt(process.env.SALT_ROUNDS_1))
+        const hashPassword = bcrypt.hashSync(newPassword, +process.env.SALT_ROUNDS_1)
         student.password = hashPassword
         await student.save()
         const studentToken = this.jwtService.sign({ id: student._id, name: student.fullName, eamil: student.email },
@@ -177,7 +173,6 @@ export class StudentService {
 
     async deleteMyAcc(req: any) {
         const student = await this.studentModel.findById(req.authStudent.id)
-        if(!student) throw new BadRequestException('Student account not found')
         await student.deleteOne()
         return true
     }

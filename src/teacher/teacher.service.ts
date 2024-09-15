@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Teacher } from 'src/DB/models/teacher.model';
@@ -20,7 +20,7 @@ export class TeacherService {
         if(teachernId) throw new BadRequestException('Teacher national ID already exists')
         const teacher = await this.teacherModel.findOne({ email })
         if(teacher) throw new BadRequestException('Teacher email already exists')
-        const hashPassword = bcrypt.hashSync(nationalId, parseInt(process.env.SALT_ROUNDS_1))
+        const hashPassword = bcrypt.hashSync(nationalId, +process.env.SALT_ROUNDS_1)
         await this.teacherModel.create({ name, email, phone, password: hashPassword,
             nationalId, specialization, salary, role: 'teacher' })
         return true
@@ -29,9 +29,9 @@ export class TeacherService {
     async firstUse(body: any) {
         const {email, password, newPassword} = body
         const teacher = await this.teacherModel.findOne({ email })
-        if(!teacher) throw new BadRequestException('Email not found')
+        if(!teacher) throw new ConflictException('Email not found')
         if(!bcrypt.compareSync(password, teacher.password)) throw new BadRequestException('Invalid password')
-        const hashPassword = bcrypt.hashSync(newPassword, parseInt(process.env.SALT_ROUNDS_1))
+        const hashPassword = bcrypt.hashSync(newPassword, +process.env.SALT_ROUNDS_1)
         teacher.password = hashPassword
         teacher.isAccountActivated = true
         await teacher.save()
@@ -41,7 +41,7 @@ export class TeacherService {
     async login(body: any) {
         const { email, password } = body
         const teacher = await this.teacherModel.findOne({ email })
-        if(!teacher) throw new BadRequestException('Email not found')
+        if(!teacher) throw new ConflictException('Email not found')
         if(!teacher.isAccountActivated) throw new BadRequestException('Please activate your account first')
         if(!bcrypt.compareSync(password, teacher.password)) throw new BadRequestException('Invalid password')
         const teacherToken = this.jwtService.sign({ id: teacher._id, name: teacher.name, eamil: teacher.email },
@@ -52,7 +52,7 @@ export class TeacherService {
     async getTeacher(params: any) {
         const teacher = await this.teacherModel.findOne({_id: params.teacherId, isAccountActivated: true})
             .select(' name email phone specialization salary ')
-        if(!teacher) throw new BadRequestException('Teacher not found')
+        if(!teacher) throw new ConflictException('Teacher not found')
         return teacher
     }
 
@@ -63,7 +63,7 @@ export class TeacherService {
             .pagination({ page, size })
             .sort(sort)
         const teachers = await features.mongooseQuery
-        if(!teachers.length) throw new BadRequestException('No teachers found')
+        if(!teachers.length) throw new ConflictException('No teachers found')
         return teachers
     }
 
@@ -73,13 +73,13 @@ export class TeacherService {
             .select(' name email phone specialization salary '))
             .searchTeachers(search)
         const teachers = await features.mongooseQuery
-        if(!teachers.length) throw new BadRequestException('No teachers found')
+        if(!teachers.length) throw new ConflictException('No teachers found')
         return teachers
     }
 
     async updateTeacherAcc(body: any, params: any) {
         const teacher = await this.teacherModel.findById(params.teacherId)
-        if(!teacher) throw new BadRequestException('Teacher not found')
+        if(!teacher) throw new ConflictException('Teacher not found')
         const { name, email, phone, specialization, salary, nationalId } = body
         if(name) teacher.name = name
         if(email) teacher.email = email
@@ -93,15 +93,15 @@ export class TeacherService {
 
     async deleteTeacherAcc(params: any) {
         const teacher = await this.teacherModel.findById(params.teacherId)
-        if(!teacher) throw new BadRequestException('Teacher account not found')
+        if(!teacher) throw new ConflictException('Teacher account not found')
         await teacher.deleteOne()
         return true
     }
 
     async resetTeacherPassword(params: any) {
         const teacher = await this.teacherModel.findById(params.teacherId)
-        if(!teacher) throw new BadRequestException('Teacher account not found')
-        const hashPassword = bcrypt.hashSync(teacher.nationalId, parseInt(process.env.SALT_ROUNDS_1))
+        if(!teacher) throw new ConflictException('Teacher account not found')
+        const hashPassword = bcrypt.hashSync(teacher.nationalId, +process.env.SALT_ROUNDS_1)
         teacher.password = hashPassword
         teacher.isAccountActivated = false
         await teacher.save()
@@ -110,7 +110,6 @@ export class TeacherService {
 
     async updateMyAcc(body: any, req: any) {
         const teacher = await this.teacherModel.findById(req.authTeacher.id)
-        if(!teacher) throw new BadRequestException('Teacher account not found')
         const { name, email, phone, nationalId } = body
         if(name) teacher.name = name
         if(email) teacher.email = email
@@ -122,10 +121,9 @@ export class TeacherService {
 
     async updateMyPassword(body: any, req: any) {
         const teacher = await this.teacherModel.findById(req.authTeacher.id)
-        if(!teacher) throw new BadRequestException('Teacher account not found')
         const { oldPassword, newPassword } = body
         if(!bcrypt.compareSync(oldPassword, teacher.password)) throw new BadRequestException('Invalid old password')
-        const hashPassword = bcrypt.hashSync(newPassword, parseInt(process.env.SALT_ROUNDS_1))
+        const hashPassword = bcrypt.hashSync(newPassword, +process.env.SALT_ROUNDS_1)
         teacher.password = hashPassword
         await teacher.save()
         const teacherToken = this.jwtService.sign({ id: teacher._id, name: teacher.name, eamil: teacher.email },
@@ -135,7 +133,6 @@ export class TeacherService {
 
     async deleteMyAcc(req: any) {
         const teacher = await this.teacherModel.findById(req.authTeacher.id)
-        if(!teacher) throw new BadRequestException('Teacher account not found')
         await teacher.deleteOne()
         return true
     }
