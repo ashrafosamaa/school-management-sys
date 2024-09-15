@@ -6,12 +6,16 @@ import * as bcrypt from 'bcrypt'
 import { cloudinaryConn } from 'src/utils/cloudinary-connection';
 import { JwtService } from '@nestjs/jwt';
 import { APIFeatures } from 'src/utils/api-feature';
+import { Course } from 'src/DB/models/course.model';
+import { StudentCourse } from 'src/DB/models/student-courses.model';
 
 
 @Injectable()
 export class StudentService {
     constructor(
         @InjectModel(Student.name) private studentModel : Model<Student>,
+        @InjectModel(Course.name) private courseModel : Model<Course>,
+        @InjectModel(StudentCourse.name) private studentCourseModel : Model<StudentCourse>,
         private jwtService: JwtService
     ) {}
 
@@ -175,6 +179,63 @@ export class StudentService {
         const student = await this.studentModel.findById(req.authStudent.id)
         await student.deleteOne()
         return true
+    }
+
+    async addCourse(body: any, params: any) {
+        const student = await this.studentModel.findById(params.studentId)
+        if(!student) throw new ConflictException('Student account not found')
+        const isCourse = await this.courseModel.findById(body.courseId);
+        if(!isCourse) throw new ConflictException('Course not found')
+        const isCourseAdded = await this.studentCourseModel.findOne({ studentId: params.studentId })
+        if(!isCourseAdded) { await this.studentCourseModel.create({
+            studentId: params.studentId,
+            courses:[{title: isCourse.title, courseId: body.courseId, year: body.year, term: body.term}] 
+            })
+        } else {
+            // check if address already exists
+            const courseExists = isCourseAdded.courses.some(c => c.courseId.toString() === body.courseId);
+            if (courseExists) {
+                throw new ConflictException('Course already added');
+            }
+            await isCourseAdded.updateOne({
+                $addToSet: { courses: { title: isCourse.title, courseId: body.courseId, year: body.year, term: body.term } }
+            })
+            await isCourseAdded.save()
+        }
+        return true
+    }
+
+    async getStudentCourses(params: any) {
+        const student = await this.studentCourseModel.findOne({studentId: params.studentId})
+            .select('studentId courses')
+            .populate({
+                path: 'studentId',
+                select: 'fullName grade classNum',
+            });
+        if(!student) throw new ConflictException('Student has no courses added yet')
+        return student
+    }
+
+    async deleteCourse(params: any, body: any) {
+        const student = await this.studentCourseModel.findOne({studentId: params.studentId})
+            .select('studentId courses')
+            .populate({
+                path: 'studentId',
+                select: 'fullName grade classNum',
+            });
+        if(!student) throw new ConflictException('Student has no courses added yet')
+        // check if address already exists
+        const courseExists = student.courses.some(c => c.courseId.toString() === body.courseId);
+        if (!courseExists) {
+            throw new ConflictException('Course not found');
+        }
+        const studentCourses = await this.studentCourseModel.findOneAndUpdate(
+            { studentId: params.studentId },
+            { $pull: { courses: { courseId: body.courseId }}},
+            { new: true})
+            .select('studentId courses')
+            .populate({ path: 'studentId', select: 'fullName grade classNum'})
+        return studentCourses
     }
 
 }

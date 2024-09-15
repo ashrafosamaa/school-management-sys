@@ -201,4 +201,47 @@ export class StudentController {
         })
     }
 
+    @Post('courses/:studentId')
+    @UseGuards(AuthAdminGuard)
+    async addCourse(
+        @Param(new ZodValidationPipe(StudentZodSchema.IDSchema)) params: any,
+        @Body(new ZodValidationPipe(StudentZodSchema.addCourseSchema)) body: any,
+        @Res() res: Response
+    ) {
+        await this.studentService.addCourse(body, params)
+        res.status(201).json({
+            message: 'Course added successfully',
+            statusCode: 201,
+        })
+    }
+
+    @Get('courses/:studentId')
+    @UsePipes(new ZodValidationPipe(StudentZodSchema.IDSchema))
+    async getStudentCourses(
+        @Param() params: any,
+        @Res() res: Response
+    ) {
+        const student = await this.studentService.getStudentCourses(params)
+        res.status(200).json({
+            message: 'Courses fetched successfully',
+            statusCode: 200,
+            student
+        })
+    }
+
+    @Put('courses/:studentId')
+    @UseGuards(AuthAdminGuard)
+    async deleteCourse(
+        @Param(new ZodValidationPipe(StudentZodSchema.IDSchema)) params: any,
+        @Body(new ZodValidationPipe(StudentZodSchema.deleteCourseSchema)) body: any,
+        @Res() res: Response
+    ) {
+        const student = await this.studentService.deleteCourse(params, body)
+        res.status(200).json({
+            message: 'Course deleted successfully',
+            statusCode: 200,
+            student
+        })
+    }
+
 }

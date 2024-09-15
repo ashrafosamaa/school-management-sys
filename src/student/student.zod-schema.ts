@@ -111,4 +111,17 @@ export class StudentZodSchema {
         }
     })
 
+    static addCourseSchema = z.object({
+        courseId: z.string().length(24, { message: 'Course ID must be exactly 24 characters long' })
+            .regex(/^[0-9a-fA-F]{24}$/, { message: 'Course ID must only contain hex characters' }),
+        year: z.string().regex(/^\d{4}-\d{4}$/, {
+            message: 'Year must be in the format YYYY-YYYY'}),
+        term: z.enum(['first', 'second', 'summer'])
+    }).required()
+
+    static deleteCourseSchema = z.object({
+        courseId: z.string().length(24, { message: 'Course ID must be exactly 24 characters long' })
+            .regex(/^[0-9a-fA-F]{24}$/, { message: 'Course ID must only contain hex characters' }),
+    }).required()
+
 }
