@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 
 
 @Injectable()
-export class ParentService {
+export class ParentAuthService {
     constructor(
         @InjectModel(Parent.name) private parentModel : Model<Parent>,
         @InjectModel(Student.name) private studentModel : Model<Student>,

@@ -1,23 +1,23 @@
 import { Body, Controller, Patch, Post, Res, UsePipes } from '@nestjs/common';
-import { ParentService } from './parent.service';
+import { ParentAuthService } from './parent-auth.service';
 import { Response } from 'express';
 import { ZodValidationPipe } from 'src/pipes/validation.pipe';
-import { ParentZodSchema } from './parent.zod-schema';
+import { ParentAuthZodSchema } from './parent-auth.zod-schema';
 
 
-@Controller('parent')
-export class ParentController {
+@Controller('parentAuth')
+export class ParentAuthController {
     constructor(
-        private readonly parentService: ParentService
+        private readonly parentAuthService: ParentAuthService
     ) {}
 
     @Post()
-    @UsePipes(new ZodValidationPipe(ParentZodSchema.signUpSchema))
+    @UsePipes(new ZodValidationPipe(ParentAuthZodSchema.signUpSchema))
     async signUp(
         @Body()body: any,
         @Res() res: Response
     ) {
-        await this.parentService.signUp(body)
+        await this.parentAuthService.signUp(body)
         res.status(201).json({
             message: 'Your account created successfully, check your email for verification code',
             statusCode: 201
@@ -25,12 +25,12 @@ export class ParentController {
     }
 
     @Post('confirm-email')
-    @UsePipes(new ZodValidationPipe(ParentZodSchema.confirmEmailSchema))
+    @UsePipes(new ZodValidationPipe(ParentAuthZodSchema.confirmEmailSchema))
     async confirmEmail(
         @Body()body: any,
         @Res() res: Response
     ) {
-        const parentToken = await this.parentService.confirmEmail(body)
+        const parentToken = await this.parentAuthService.confirmEmail(body)
         res.status(200).json({
             message: 'Account activated successfully',
             statusCode: 200,
@@ -39,12 +39,12 @@ export class ParentController {
     }
 
     @Post('resend-code')
-    @UsePipes(new ZodValidationPipe(ParentZodSchema.resendCode))
+    @UsePipes(new ZodValidationPipe(ParentAuthZodSchema.resendCode))
     async resendCode(
         @Body()body: any,
         @Res() res: Response
     ) {
-        await this.parentService.resendCode(body)
+        await this.parentAuthService.resendCode(body)
         res.status(200).json({
             message: 'Verification code sent successfully, check your email for verification code',
             statusCode: 200
@@ -52,12 +52,12 @@ export class ParentController {
     }
 
     @Post('login')
-    @UsePipes(new ZodValidationPipe(ParentZodSchema.loginSchema))
+    @UsePipes(new ZodValidationPipe(ParentAuthZodSchema.loginSchema))
     async login(
         @Body()body: any,
         @Res() res: Response
     ) {
-        const parentToken = await this.parentService.login(body)
+        const parentToken = await this.parentAuthService.login(body)
         res.status(200).json({
             message: 'Parent logged in successfully',
             statusCode: 200,
@@ -66,12 +66,12 @@ export class ParentController {
     }
 
     @Post('forgot-password')
-    @UsePipes(new ZodValidationPipe(ParentZodSchema.resendCode))
+    @UsePipes(new ZodValidationPipe(ParentAuthZodSchema.resendCode))
     async forgotPasswordReq(
         @Body()body: any,
         @Res() res: Response
     ) {
-        await this.parentService.forgotPassword(body)
+        await this.parentAuthService.forgotPassword(body)
         res.status(200).json({
             message: 'Password reset code sent successfully, check your email for reset your password',
             statusCode: 200
@@ -79,12 +79,12 @@ export class ParentController {
     }
 
     @Post('verify-password-code')
-    @UsePipes(new ZodValidationPipe(ParentZodSchema.verifyPasswordResetCode))
+    @UsePipes(new ZodValidationPipe(ParentAuthZodSchema.verifyPasswordResetCode))
     async verifyPasswordResetCode(
         @Body()body: any,
         @Res() res: Response
     ) {
-        await this.parentService.verifyPasswordResetCode(body)
+        await this.parentAuthService.verifyPasswordResetCode(body)
         res.status(200).json({
             message: 'Code verified successfully, enter new password',
             statusCode: 200
@@ -92,12 +92,12 @@ export class ParentController {
     }
 
     @Patch('reset-password')
-    @UsePipes(new ZodValidationPipe(ParentZodSchema.resetPassword))
+    @UsePipes(new ZodValidationPipe(ParentAuthZodSchema.resetPassword))
     async resetPassword(
         @Body()body: any,
         @Res() res: Response
     ) {
-        const token = await this.parentService.resetPassword(body)
+        const token = await this.parentAuthService.resetPassword(body)
         res.status(200).json({
             message: 'Password changed successfully',
             statusCode: 200,

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export class ParentZodSchema {
+export class ParentAuthZodSchema {
     static signUpSchema = z.object({
         name: z.string().min(3, { message: 'Name must be at least 3 characters long' })
             .max(64, { message: 'Name must be at most 16 characters long' }),
