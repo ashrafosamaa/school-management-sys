@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt';
 import { APIFeatures } from 'src/utils/api-feature';
 import { StudentCourse } from 'src/DB/models/student-courses.model';
+import { Course } from 'src/DB/models/course.model';
 
 
 @Injectable()
@@ -13,6 +14,7 @@ export class TeacherService {
     constructor(
         @InjectModel(Teacher.name) private teacherModel : Model<Teacher>,
         @InjectModel(StudentCourse.name) private studentCourseModel : Model<StudentCourse>,
+        @InjectModel(Course.name) private courseModel : Model<Course>,
         private jwtService: JwtService
     ) {}
 
@@ -147,6 +149,9 @@ export class TeacherService {
     }
 
     async updateResultBFinal (body: any, params: any, req: any) {
+        const course = await this.courseModel.findById(body.courseId)
+        // check that teacher is assigned to this course
+        if (!course.teachers.includes(req.authTeacher.id)) throw new ConflictException('You are not assigned to this course');
         const studentCourses = await this.studentCourseModel.findOne(
             { studentId: params.studentId, "courses.courseId": body.courseId },
             { "courses.$": 1 } // Only fetch the specific course
@@ -182,6 +187,9 @@ export class TeacherService {
     }
 
     async updateResultAFinal (body: any, params: any, req: any) {
+        const course = await this.courseModel.findById(body.courseId)
+        // check that teacher is assigned to this course
+        if (!course.teachers.includes(req.authTeacher.id)) throw new ConflictException('You are not assigned to this course');
         const studentCourses = await this.studentCourseModel.findOne(
             { studentId: params.studentId, "courses.courseId": body.courseId },
             { "courses.$": 1 } // Only fetch the specific course
