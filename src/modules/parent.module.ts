@@ -7,8 +7,8 @@ import { ParentAuthService } from 'src/parent-auth/parent-auth.service';
 
 
 @Module({
-    imports: [models],
-    controllers: [ParentAuthController],
-    providers: [ParentAuthService, JwtService, SendEmailService],
+  imports: [models],
+  controllers: [ParentAuthController],
+  providers: [ParentAuthService, JwtService, SendEmailService],
 })
-export class ParentAuthModule {}
+export class ParentModule {}

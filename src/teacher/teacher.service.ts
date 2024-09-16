@@ -52,7 +52,7 @@ export class TeacherService {
     }
 
     async getTeacher(params: any) {
-        const teacher = await this.teacherModel.findOne({_id: params.teacherId, isAccountActivated: true})
+        const teacher = await this.teacherModel.findOne({ _id: params.teacherId })
             .select(' name email phone specialization salary gender ')
         if(!teacher) throw new ConflictException('Teacher not found')
         return teacher
@@ -71,7 +71,7 @@ export class TeacherService {
 
     async searchTeachers(query: any) {
         const { ...search } = query
-        const features = new APIFeatures(query, this.teacherModel.find({ isAccountActivated: true })
+        const features = new APIFeatures(query, this.teacherModel.find()
             .select(' name email phone salary '))
             .searchTeachers(search)
         const teachers = await features.mongooseQuery
@@ -82,6 +82,10 @@ export class TeacherService {
     async updateTeacherAcc(body: any, params: any) {
         const teacher = await this.teacherModel.findById(params.teacherId)
         if(!teacher) throw new ConflictException('Teacher not found')
+        const isNIdExist = await this.teacherModel.findOne({ nationalId: body.nationalId, _id: { $ne: params.teacherId } })
+        if(isNIdExist) throw new BadRequestException('National Id already exists')
+        const isPhoneExists = await this.teacherModel.findOne({ phone: body.phone, _id: { $ne: params.teacherId } })
+        if(isPhoneExists) throw new BadRequestException('Phone number already exists')
         const { name, email, phone, specialization, salary, nationalId, gender } = body
         if(name) teacher.name = name
         if(email) teacher.email = email
@@ -113,11 +117,12 @@ export class TeacherService {
 
     async updateMyAcc(body: any, req: any) {
         const teacher = await this.teacherModel.findById(req.authTeacher.id)
-        const { name, email, phone, nationalId, gender } = body
+        const isNIdExist = await this.teacherModel.findOne({ nationalId: body.nationalId, _id: { $ne: req.authTeacher.id } })
+        if(isNIdExist) throw new BadRequestException('National Id already exists')
+        const { name, email, phone, gender } = body
         if(name) teacher.name = name
         if(email) teacher.email = email
         if(phone) teacher.phone = phone
-        if(nationalId) teacher.nationalId = nationalId
         if(gender) teacher.gender = gender
         await teacher.save()
         return true
@@ -195,10 +200,8 @@ export class TeacherService {
         const studentCoursesResult = await this.studentCourseModel.findOneAndUpdate(
             { studentId: params.studentId, "courses.courseId": body.courseId },
             { $set: {
-                    "courses.$.updatedBy": req.authTeacher.id,
-                    "courses.$.totalAFinal":
-                        (existingTotalBFinal) + body.final
-                }
+                    "courses.$.updatedBy": req.authTeacher.id, "courses.$.final": body.final,
+                    "courses.$.totalAFinal": (existingTotalBFinal) + body.final }
             }, { new: true }
         ).select('studentId courses')
         .populate({ path: 'studentId', select: 'fullName grade classNum'})

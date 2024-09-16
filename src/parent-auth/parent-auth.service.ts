@@ -4,8 +4,8 @@ import { Model } from 'mongoose';
 import { Parent } from 'src/DB/models/parent.model';
 import { Student } from 'src/DB/models/student.model';
 import * as bcrypt from 'bcrypt'
-import { SendEmailService } from 'src/common/send-email.service';
 import { JwtService } from '@nestjs/jwt';
+import { SendEmailService } from 'src/common/send-email.service';
 
 
 @Injectable()

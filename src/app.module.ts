@@ -3,8 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-import { AdminModule, TeacherModule, StudentModule, ParentModule } from './modules';
-import { CourseModule } from './modules/course.module';
+import { AdminModule, TeacherModule, StudentModule, ParentModule, CourseModule, ParentAuthModule } from './modules';
 
 
 @Module({
@@ -14,8 +13,9 @@ import { CourseModule } from './modules/course.module';
     AdminModule,
     TeacherModule,
     StudentModule,
+    CourseModule,
     ParentModule,
-    CourseModule
+    ParentAuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

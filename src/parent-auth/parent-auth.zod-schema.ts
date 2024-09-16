@@ -7,7 +7,7 @@ export class ParentAuthZodSchema {
         email: z.string().email({ message: 'Invalid email address' }),
         stNationalId: z.string().length(14, { message: 'National ID must be exactly 14 digits' })
             .regex(/^[0-9]+$/, { message: 'National ID must only contain digits' }),
-        phone: z.string().length(11, { message: 'Phone must be exactly 11 digits' }).optional(),
+        phone: z.string().length(11, { message: 'Phone must be exactly 11 digits' }),
         address: z.string().min(5, { message: 'Name must be at least 5 characters long' })
             .max(128, { message: 'Name must be at most 128 characters long' }),
         password: z.string().min(8, { message: 'Password must be at least 8 characters long' })

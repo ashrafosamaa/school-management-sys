@@ -42,4 +42,12 @@ export class APIFeatures {
         return this
     }
 
+    // Search on teachers with name
+    searchParent(search: any) {
+        const queryFiler: any = {}
+        if (search.name) queryFiler.name = { $regex: search.name, $options: 'i' }
+        this.mongooseQuery = this.mongooseQuery.find(queryFiler)
+        return this
+    }
+
 }

@@ -10,7 +10,7 @@ export class Parent {
     @Prop({ type : String , required : true , unique : true })
     email : string
 
-    @Prop({ type: String, required: true, })
+    @Prop({ type: String, required: true, unique: true })
     phone : string
 
     @Prop({ type : String , required : true })
@@ -31,7 +31,7 @@ export class Parent {
     })
     parentSons: Array<{
         fullName: string;
-        nationalId: string;
+        stNationalId: string;
         studentId: Types.ObjectId;
     }>;
 
@@ -46,6 +46,7 @@ export class Parent {
 
     @Prop({ type: Boolean, default: false })
     passwordResetReq: boolean;
+
 }
 
 export const parentSchema = SchemaFactory.createForClass(Parent)

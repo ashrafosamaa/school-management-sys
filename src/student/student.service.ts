@@ -64,7 +64,7 @@ export class StudentService {
     }
 
     async getStudent(params: any) {
-        const student = await this.studentModel.findOne({ _id: params.studentId, isAccountActivated: true })
+        const student = await this.studentModel.findOne({ _id: params.studentId })
             .select(' fullName email phone address parentPhone birthDate gender totalFees grade classNum paidFees fessStatus profileImg.url ')
         if(!student) throw new ConflictException('Student not found')
         return student
@@ -83,7 +83,7 @@ export class StudentService {
 
     async searchStudents(query: any) {
         const { ...search } = query
-        const features = new APIFeatures(query, this.studentModel.find({ isAccountActivated: true })
+        const features = new APIFeatures(query, this.studentModel.find()
             .select(' fullName email parentPhone gender totalFees grade classNum fessStatus nationalId '))
             .searchStudents(search)
         const students = await features.mongooseQuery
@@ -94,6 +94,8 @@ export class StudentService {
     async updateStudentAcc(body: any, params: any) {
         const student = await this.studentModel.findById(params.studentId)
         if(!student) throw new ConflictException('Student not found')
+        const isNIdExist = await this.studentModel.findOne({ nationalId: body.nationalId, _id: {$ne: params.studentId} })
+        if(isNIdExist) throw new ConflictException('Student national ID already exists')
         if(body.fullName) student.fullName = body.fullName
         if(body.nationalId) student.nationalId = body.nationalId
         if(body.email) student.email = body.email
@@ -153,9 +155,8 @@ export class StudentService {
 
     async updateMyAcc(body: any, req: any) {
         const student = await this.studentModel.findById(req.authStudent.id)
-        const { fullName, email, phone, nationalId, address } = body
+        const { fullName, email, phone, address } = body
         if(fullName) student.fullName = fullName
-        if(nationalId) student.nationalId = nationalId
         if(email) student.email = email
         if(phone) student.phone = phone
         if(address) student.address = address
@@ -192,7 +193,7 @@ export class StudentService {
             courses:[{title: isCourse.title, courseId: body.courseId, year: body.year, term: body.term}] 
             })
         } else {
-            // check if address already exists
+            // check if already exists
             const courseExists = isCourseAdded.courses.some(c => c.courseId.toString() === body.courseId);
             if (courseExists) {
                 throw new ConflictException('Course already added');

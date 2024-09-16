@@ -1,16 +1,15 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
 
 
 @Schema({timestamps : true})
 export class Student {
-    @Prop({ type : String , required : true , trim : true })
+    @Prop({ type : String , required : true })
     fullName : string
 
     @Prop({ type : String , required : true , unique : true })
     email : string
 
-    @Prop({ type : String , required : true })
+    @Prop({ type : String , required : true, unique : true })
     nationalId : string
 
     @Prop({ type: String, })
@@ -28,10 +27,10 @@ export class Student {
     @Prop({ type : String , required : true, enum : ["male", "female"] })
     gender : string
 
-    @Prop({ type : String , required : true , })
+    @Prop({ type : String , required : true })
     password : string
 
-    @Prop({ type : String , required : true , })
+    @Prop({ type : String , required : true })
     totalFees : string
 
     @Prop({ type : String , default : "0" })
@@ -43,17 +42,6 @@ export class Student {
     @Prop({ type : String , required : true ,
     enum : ["k1", "k2", "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9"] })
     grade : string
-
-    @Prop({
-        type: [{
-            title: { type: String, },
-            courseId: { type: Types.ObjectId, ref: 'Student'},
-        }],
-    })
-    courses: Array<{
-        title: string;
-        courseId: Types.ObjectId;
-    }>;
 
     @Prop({ type : String , required : true, enum : ["A", "B", "C"] })
     classNum : string
@@ -74,6 +62,7 @@ export class Student {
 
     @Prop({ type : Boolean , default : false })
     isAccountActivated : boolean
+
 }
 
 export const studentSchema = SchemaFactory.createForClass(Student)
