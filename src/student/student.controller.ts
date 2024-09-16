@@ -217,11 +217,11 @@ export class StudentController {
 
     @Get('courses/:studentId')
     @UsePipes(new ZodValidationPipe(StudentZodSchema.IDSchema))
-    async getStudentCourses(
+    async getStudentCoursesByAdmin(
         @Param() params: any,
         @Res() res: Response
     ) {
-        const student = await this.studentService.getStudentCourses(params)
+        const student = await this.studentService.getStudentCoursesByAdmin(params)
         res.status(200).json({
             message: 'Courses fetched successfully',
             statusCode: 200,
@@ -239,6 +239,20 @@ export class StudentController {
         const student = await this.studentService.deleteCourse(params, body)
         res.status(200).json({
             message: 'Course deleted successfully',
+            statusCode: 200,
+            student
+        })
+    }
+
+    @Get('mycourses')
+    @UseGuards(AuthStudentGuard)
+    async getStudentCoursesByStudent(
+        @Req() req: Request,
+        @Res() res: Response
+    ) {
+        const student = await this.studentService.getStudentCoursesByStudent(req)
+        res.status(200).json({
+            message: 'Courses fetched successfully',
             statusCode: 200,
             student
         })

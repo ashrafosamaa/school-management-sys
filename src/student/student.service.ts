@@ -205,7 +205,7 @@ export class StudentService {
         return true
     }
 
-    async getStudentCourses(params: any) {
+    async getStudentCoursesByAdmin(params: any) {
         const student = await this.studentCourseModel.findOne({studentId: params.studentId})
             .select('studentId courses')
             .populate({ path: 'studentId', select: 'fullName grade classNum'})
@@ -235,6 +235,15 @@ export class StudentService {
             .populate({ path: 'studentId', select: 'fullName grade classNum'})
             .populate({ path: 'courses.updatedBy', select: 'name'});
         return studentCourses
+    }
+
+    async getStudentCoursesByStudent(req: any) {
+        const student = await this.studentCourseModel.findOne({studentId: req.authStudent.id})
+            .select('studentId courses')
+            .populate({ path: 'studentId', select: 'fullName grade classNum'})
+            .populate({ path: 'courses.updatedBy', select: 'name'});
+        if(!student) throw new ConflictException('Student has no courses added yet')
+        return student
     }
 
 }

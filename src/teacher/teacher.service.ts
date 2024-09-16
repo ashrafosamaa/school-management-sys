@@ -141,31 +141,69 @@ export class TeacherService {
         return true
     }
 
-    async updateStudentResults(body: any, params: any, req:any) {
-        const student = await this.studentCourseModel.findOne({studentId: params.studentId})
-            .select('studentId courses')
-            .populate({
-                path: 'studentId',
-                select: 'fullName grade classNum',
-            })
-        if(!student) throw new ConflictException('Student already has no courses added, or not found')
-        // check if address already exists
-        const courseExists = student.courses.some(c => c.courseId.toString() === body.courseId);
-        if (!courseExists) {
-            throw new ConflictException('Course not found');
-        }
-        const studentCourses = await this.studentCourseModel.findOneAndUpdate(
+    async updateResultBFinal (body: any, params: any, req: any) {
+        const studentCourses = await this.studentCourseModel.findOne(
             { studentId: params.studentId, "courses.courseId": body.courseId },
-            { $set: 
-            { "courses.$.oral": body.oral, "courses.$.attendance": body.attendance, "courses.$.practical": body.practical,
-                "courses.$.midterm": body.midterm, "courses.$.final": body.final, "courses.$.updatedBy": req.authTeacher.id,
-                "courses.$.total": (body.oral ?? 0) + (body.practical ?? 0) +
-                (body.midterm ?? 0) + (body.final ?? 0) + (body.attendance ?? 0) }},
-            { new: true})
-            .select('studentId courses')
-            .populate({ path: 'studentId', select: 'fullName grade classNum'})
-            .populate({ path: 'courses.updatedBy', select: 'name'});
-        return studentCourses
+            { "courses.$": 1 } // Only fetch the specific course
+        );
+        
+        if (!studentCourses || !studentCourses.courses.length) {
+            throw new ConflictException('Course not found for the student');
+        }
+        // Get existing values from the database
+        const existingCourse = studentCourses.courses[0];
+        const existingOral = existingCourse.oral ?? null;
+        const existingAttendance = existingCourse.attendance ?? null;
+        const existingPractical = existingCourse.practical ?? null;
+        const existingMidterm = existingCourse.midterm ?? null;
+        // Update the oral and recalculate total
+        const studentCoursesResult = await this.studentCourseModel.findOneAndUpdate(
+            { studentId: params.studentId, "courses.courseId": body.courseId },
+            { $set: {
+                    "courses.$.oral": body.oral ?? existingOral, "courses.$.attendance": body.attendance ?? existingAttendance,
+                    "courses.$.practical": body.practical ?? existingPractical, "courses.$.midterm": body.midterm ?? existingMidterm,
+                    "courses.$.updatedBy": req.authTeacher.id,
+                    "courses.$.totalBFinal":
+                        (body.oral ?? existingOral) + 
+                        (body.attendance ?? existingAttendance) +
+                        (body.practical ?? existingPractical) +
+                        (body.midterm ?? existingMidterm) 
+                }
+            }, { new: true }
+        ).select('studentId courses')
+        .populate({ path: 'studentId', select: 'fullName grade classNum'})
+        .populate({ path: 'courses.updatedBy', select: 'name'});
+        return studentCoursesResult
+    }
+
+    async updateResultAFinal (body: any, params: any, req: any) {
+        const studentCourses = await this.studentCourseModel.findOne(
+            { studentId: params.studentId, "courses.courseId": body.courseId },
+            { "courses.$": 1 } // Only fetch the specific course
+        );
+        
+        if (!studentCourses || !studentCourses.courses.length) {
+            throw new ConflictException('Course not found for the student');
+        }
+        // Get existing values from the database
+        const existingCourse = studentCourses.courses[0];
+        if(!existingCourse.totalBFinal || !existingCourse.midterm || !existingCourse.oral
+            || !existingCourse.practical || !existingCourse.attendance
+        ) throw new ConflictException('Please update other results before final first')
+        const existingTotalBFinal = existingCourse.totalBFinal;
+        // Update the oral and recalculate total
+        const studentCoursesResult = await this.studentCourseModel.findOneAndUpdate(
+            { studentId: params.studentId, "courses.courseId": body.courseId },
+            { $set: {
+                    "courses.$.updatedBy": req.authTeacher.id,
+                    "courses.$.totalAFinal":
+                        (existingTotalBFinal) + body.final
+                }
+            }, { new: true }
+        ).select('studentId courses')
+        .populate({ path: 'studentId', select: 'fullName grade classNum'})
+        .populate({ path: 'courses.updatedBy', select: 'name'});
+        return studentCoursesResult
     }
 
 }

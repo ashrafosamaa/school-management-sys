@@ -181,19 +181,36 @@ export class TeacherController {
         })
     }
 
-    @Put('scores/:studentId')
+    @Put('scores-before-final/:studentId')
     @UseGuards(AuthTeacherGuard)
-    async updateStudentResults(
+    async updateResultBFinal(
         @Param(new ZodValidationPipe(TeacherZodSchema.studentIdSchema)) params: any,
-        @Body(new ZodValidationPipe(TeacherZodSchema.updateStudentResultsSchema)) body: any,
+        @Body(new ZodValidationPipe(TeacherZodSchema.updateResultBFinalSchema)) body: any,
         @Req() req: Request,
         @Res() res: Response
     ) {
-        const student = await this.teacherService.updateStudentResults(body, params, req)
+        const student = await this.teacherService.updateResultBFinal(body, params, req)
         res.status(200).json({
             message: 'Student results updated successfully',
             statusCode: 200,
             student
         })
     }
+
+    @Put('scores-after-final/:studentId')
+    @UseGuards(AuthTeacherGuard)
+    async updateResultAFinal(
+        @Param(new ZodValidationPipe(TeacherZodSchema.studentIdSchema)) params: any,
+        @Body(new ZodValidationPipe(TeacherZodSchema.updateResultAFinalSchema)) body: any,
+        @Req() req: Request,
+        @Res() res: Response
+    ) {
+        const student = await this.teacherService.updateResultAFinal(body, params, req)
+        res.status(200).json({
+            message: 'Student results updated successfully',
+            statusCode: 200,
+            student
+        })
+    }
+
 }

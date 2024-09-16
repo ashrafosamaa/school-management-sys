@@ -101,15 +101,25 @@ export class TeacherZodSchema {
         }
     })
 
-    static updateStudentResultsSchema = z.object({
+    static updateResultBFinalSchema = z.object({
         courseId: z.string().length(24, { message: 'Course ID must be 24 characters long' })
             .regex(/^[0-9a-fA-F]+$/, { message: 'Course ID must only contain hex characters' }),
-        oral: z.number().max(10, { message: 'Oral must be at most 10' }).optional(),
-        attendance: z.number().max(10, { message: 'Attendance must be at most 10' }).optional(),
-        practical: z.number().max(15, { message: 'Practical must be at most 15' }).optional(),
-        midterm: z.number().max(15, { message: 'Midterm must be at most 15' }).optional(),
-        final: z.number().max(50, { message: 'Final must be at most 50' }).optional()
+        oral: z.number().max(10, { message: 'Oral must be at most 10' })
+            .min(0, { message: 'Oral must be at least 0' }).optional(),
+        attendance: z.number().max(10, { message: 'Attendance must be at most 10' })
+            .min(0, { message: 'Attendance must be at least 0' }).optional(),
+        practical: z.number().max(15, { message: 'Practical must be at most 15' })
+            .min(0, { message: 'Practical must be at least 0' }).optional(),
+        midterm: z.number().max(15, { message: 'Midterm must be at most 15' })
+            .min(0, { message: 'Midterm must be at least 0' }).optional(),
     })
+
+    static updateResultAFinalSchema = z.object({
+        courseId: z.string().length(24, { message: 'Course ID must be 24 characters long' })
+            .regex(/^[0-9a-fA-F]+$/, { message: 'Course ID must only contain hex characters' }),
+        final: z.number().max(50, { message: 'Final must be at most 50' })
+            .min(0, { message: 'Final must be at least 0' })
+    }).required()
 
     static studentIdSchema = z.object({
         studentId: z.string().length(24, { message: 'ID must be exactly 24 characters long' })
